@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+
+import { User } from '../services/user.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -11,7 +13,7 @@ export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
   submitted = false;
 
-  constructor(private formBuilder: FormBuilder, private router: Router) { }
+  constructor(private formBuilder: FormBuilder, private authService: AuthService) { }
 
   ngOnInit() {
     this.registerForm = this.formBuilder.group({
@@ -33,8 +35,20 @@ export class RegisterComponent implements OnInit {
     if (this.registerForm.invalid) {
       return;
     }
-    // Todo
-    console.log('success');
-    this.router.navigate(['/login']);
+
+    const user: User = {
+      email: this.email.value,
+      firstName: this.firstName.value,
+      lastName: this.lastName.value,
+      password: this.password.value
+    };
+
+    this.authService.signup(user).subscribe(registeredUser => {
+      if (registeredUser.token) {
+        this.authService.onAuthenticate(registeredUser.token);
+        console.log('register success');
+      }
+      return registeredUser;
+    });
   }
 }
